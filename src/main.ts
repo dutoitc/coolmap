@@ -23,34 +23,34 @@ import type {
 
 const app = document.querySelector<HTMLDivElement>('#app');
 if (!app) {
-  throw new Error("L'élément #app est introuvable.");
+  throw new Error("L'ément #app est introuvable.");
 }
 
 app.innerHTML = `
   <header class="app-header">
     <div>
-      <p class="eyebrow">Planificateur de fraîcheur</p>
-      <h1>Fraîcheur Suisse</h1>
-      <p class="subtitle">Choisissez une date et une température maximale. La carte ne colore que les secteurs qui devraient rester sous ce seuil.</p>
+      <p class="eyebrow">Planificateur de fraîeur</p>
+      <h1>Fraîeur Suisse</h1>
+      <p class="subtitle">Choisissez une date et une tempéture maximale. La carte ne colore que les secteurs qui devraient rester sous ce seuil.</p>
     </div>
-    <div class="header-badge">Prévision indicative</div>
+    <div class="header-badge">Présion indicative</div>
   </header>
 
   <main class="app-layout">
-    <aside class="control-panel" aria-label="Filtres météo">
+    <aside class="control-panel" aria-label="Filtres méo">
       <section class="controls-card">
         <div class="field">
           <label for="date-select">Jour</label>
           <select id="date-select" disabled>
-            <option>Chargement des prévisions…</option>
+            <option>Chargement des présions</option>
           </select>
         </div>
 
         <div class="field">
-          <label for="mode-select">Température</label>
+          <label for="mode-select">Tempéture</label>
           <select id="mode-select">
-            <option value="daily-max">Maximum de la journée</option>
-            <option value="hourly">À une heure précise</option>
+            <option value="daily-max">Maximum de la journé/option>
+            <option value="hourly">Àune heure prése</option>
           </select>
         </div>
 
@@ -61,35 +61,35 @@ app.innerHTML = `
 
         <div class="field threshold-field">
           <div class="field-heading">
-            <label for="threshold-range">Température limite</label>
+            <label for="threshold-range">Tempéture limite</label>
             <output id="threshold-output" for="threshold-range">27 °C</output>
           </div>
           <input id="threshold-range" type="range" min="8" max="38" step="0.5" value="27" />
           <div class="range-labels"><span>8 °C</span><span>38 °C</span></div>
         </div>
 
-        <button id="refresh-button" class="secondary-button" type="button">Actualiser les données</button>
+        <button id="refresh-button" class="secondary-button" type="button">Actualiser les donné</button>
       </section>
 
       <section class="status-card" aria-live="polite">
         <div id="loading-block">
           <div class="spinner" aria-hidden="true"></div>
           <div>
-            <strong id="status-title">Préparation de la grille</strong>
-            <p id="status-detail">Quelques secondes peuvent être nécessaires au premier chargement.</p>
+            <strong id="status-title">Prération de la grille</strong>
+            <p id="status-detail">Quelques secondes peuvent êe néssaires au premier chargement.</p>
           </div>
         </div>
         <div id="error-block" class="error-block is-hidden"></div>
       </section>
 
       <section class="summary-card">
-        <div class="summary-number" id="visible-count">—</div>
+        <div class="summary-number" id="visible-count"></div>
         <p>cellules sous le seuil</p>
         <dl class="summary-grid">
-          <div><dt>Minimum prévu</dt><dd id="minimum-value">—</dd></div>
-          <div><dt>Maximum prévu</dt><dd id="maximum-value">—</dd></div>
-          <div><dt>Date</dt><dd id="selected-date-label">—</dd></div>
-          <div><dt>Grille</dt><dd id="grid-count">—</dd></div>
+          <div><dt>Minimum pré</dt><dd id="minimum-value"></dd></div>
+          <div><dt>Maximum pré</dt><dd id="maximum-value"></dd></div>
+          <div><dt>Date</dt><dd id="selected-date-label"></dd></div>
+          <div><dt>Grille</dt><dd id="grid-count"></dd></div>
         </dl>
       </section>
 
@@ -99,24 +99,24 @@ app.innerHTML = `
           <span id="coolest-context"></span>
         </div>
         <ol id="coolest-list" class="coolest-list">
-          <li class="empty-list">Les résultats apparaîtront après le chargement.</li>
+          <li class="empty-list">Les réltats apparaîont aprèle chargement.</li>
         </ol>
       </section>
     </aside>
 
     <section class="map-panel">
-      <div id="map" aria-label="Carte météo de la Suisse"></div>
-      <div class="legend" aria-label="Légende de température">
+      <div id="map" aria-label="Carte méo de la Suisse"></div>
+      <div class="legend" aria-label="Lénde de tempéture">
         <span>Plus frais</span>
         <div class="legend-gradient"></div>
         <span>Proche du seuil</span>
       </div>
-      <div class="map-note">Les zones non colorées dépassent le seuil choisi ou ne disposent pas de données.</div>
+      <div class="map-note">Les zones non coloré déssent le seuil choisi ou ne disposent pas de donné.</div>
     </section>
   </main>
 
   <footer>
-    Prévisions : <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a>, modèles dont MeteoSwiss · Altitude : Copernicus DEM · Carte : OpenStreetMap · Frontière simplifiée : Natural Earth.
+    Présions : <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a>, modès dont MeteoSwiss · Altitude : Copernicus DEM · Carte : OpenStreetMap · Frontiè simplifié: Natural Earth.
   </footer>
 `;
 
@@ -190,7 +190,7 @@ function registerEvents(): void {
 }
 
 async function loadDailyForecast(forceRefresh = false): Promise<void> {
-  setLoading('Chargement des prévisions', 'Connexion à Open-Meteo…');
+  setLoading('Chargement des présions', 'Connexion àpen-Meteo');
   clearError();
   elements.refreshButton.disabled = true;
   elements.dateSelect.disabled = true;
@@ -199,12 +199,12 @@ async function loadDailyForecast(forceRefresh = false): Promise<void> {
   try {
     dailyForecast = await fetchDailyForecast(
       grid,
-      (progress) => updateProgress(progress, 'Prévisions journalières'),
+      (progress) => updateProgress(progress, 'Présions journaliès'),
       forceRefresh,
     );
 
     if (!dailyForecast.length || !dailyForecast[0].daily.dates.length) {
-      throw new Error('Aucune prévision journalière reçue.');
+      throw new Error('Aucune présion journaliè reç.');
     }
 
     populateDates(dailyForecast[0].daily.dates);
@@ -235,15 +235,15 @@ async function updateSelectedForecast(): Promise<void> {
   }
 
   setLoading(
-    'Chargement du détail horaire',
-    `Températures du ${formatShortDate(dateIso)}…`,
+    'Chargement du déil horaire',
+    `Tempétures du ${formatShortDate(dateIso)}`,
   );
 
   try {
     let hourlyForecast = hourlyForecastByDate.get(dateIso);
     if (!hourlyForecast) {
       hourlyForecast = await fetchHourlyForecastForDate(grid, dateIso, (progress) =>
-        updateProgress(progress, 'Prévisions horaires'),
+        updateProgress(progress, 'Présions horaires'),
       );
       hourlyForecastByDate.set(dateIso, hourlyForecast);
     }
@@ -328,7 +328,7 @@ function renderSummary(): void {
   if (!visible.length) {
     const item = document.createElement('li');
     item.className = 'empty-list';
-    item.textContent = 'Aucun point ne respecte ce seuil. Montez légèrement la température limite.';
+    item.textContent = 'Aucun point ne respecte ce seuil. Montez lérement la tempéture limite.';
     elements.coolestList.append(item);
     return;
   }
@@ -388,7 +388,7 @@ function updateProgress(progress: FetchProgress, label: string): void {
   const percent = Math.round(
     (progress.completedChunks / progress.totalChunks) * 100,
   );
-  setLoading(label, `${progress.completedChunks}/${progress.totalChunks} groupes chargés — ${percent} %`);
+  setLoading(label, `${progress.completedChunks}/${progress.totalChunks} groupes chargé ${percent} %`);
 }
 
 function setLoading(title: string, detail: string): void {
@@ -405,7 +405,7 @@ function showError(error: unknown): void {
   setReady();
   const message = error instanceof Error ? error.message : String(error);
   elements.errorBlock.classList.remove('is-hidden');
-  elements.errorBlock.innerHTML = `<strong>Impossible de charger la météo.</strong><p>${escapeHtml(message)}</p><p>Réessayez dans quelques instants. La carte elle-même reste utilisable.</p>`;
+  elements.errorBlock.innerHTML = `<strong>Impossible de charger la méo.</strong><p>${escapeHtml(message)}</p><p>Résayez dans quelques instants. La carte elle-mê reste utilisable.</p>`;
 }
 
 function clearError(): void {
@@ -414,7 +414,7 @@ function clearError(): void {
 }
 
 function formatTemperature(value: number | null): string {
-  return value === null ? '—' : `${value.toFixed(1)} °C`;
+  return value === null ? '' : `${value.toFixed(1)} °C`;
 }
 
 function formatAltitude(value: number | null): string {
@@ -469,7 +469,7 @@ function degreesToRadians(value: number): number {
 function requiredElement<T extends HTMLElement>(id: string): T {
   const element = document.getElementById(id);
   if (!element) {
-    throw new Error(`Élément #${id} introuvable.`);
+    throw new Error(`Éént #${id} introuvable.`);
   }
   return element as T;
 }
@@ -479,3 +479,4 @@ function escapeHtml(value: string): string {
   element.textContent = value;
   return element.innerHTML;
 }
+

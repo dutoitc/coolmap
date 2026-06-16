@@ -7,7 +7,6 @@ import type {
 const FORECAST_ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
 const CHUNK_SIZE = 50;
 const CONCURRENCY = 1;
-const DELAY_BETWEEN_REQUESTS_MS = 1200;
 const CACHE_DURATION_MS = 45 * 60 * 1000;
 const GRID_VERSION = 'grid-0.075-0.10-v2';
 const CACHE_PREFIX = 'fraicheur-suisse:';
@@ -57,7 +56,7 @@ export function clearForecastCache(): void {
     }
     keysToRemove.forEach((key) => localStorage.removeItem(key));
   } catch {
-    // L'actualisation réseau reste possible même si le stockage est indisponible.
+    // L'actualisation réau reste possible mê si le stockage est indisponible.
   }
 }
 
@@ -174,9 +173,9 @@ async function fetchJson(url: string): Promise<unknown> {
       const error = (await response.json()) as { reason?: string };
       reason = error.reason ?? reason;
     } catch {
-      // La réponse n'est pas toujours du JSON en cas de panne intermédiaire.
+      // La rénse n'est pas toujours du JSON en cas de panne interméaire.
     }
-    throw new Error(`Open-Meteo a refusé la requête : ${reason}`);
+    throw new Error(`Open-Meteo a refuséa requê : ${reason}`);
   }
 
   return response.json();
@@ -192,7 +191,7 @@ function mapDailyResponses(
 ): ForecastPoint[] {
   if (responses.length !== requestedPoints.length) {
     throw new Error(
-      `Réponse météo incomplète : ${responses.length} points reçus pour ${requestedPoints.length} demandés.`,
+      `Rénse méo incomplè : ${responses.length} points reç pour ${requestedPoints.length} demandé`,
     );
   }
 
@@ -214,7 +213,7 @@ function mapHourlyResponses(
 ): HourlyForecastPoint[] {
   if (responses.length !== requestedPoints.length) {
     throw new Error(
-      `Réponse météo horaire incomplète : ${responses.length} points reçus pour ${requestedPoints.length} demandés.`,
+      `Rénse méo horaire incomplè : ${responses.length} points reç pour ${requestedPoints.length} demandé`,
     );
   }
 
@@ -296,6 +295,4 @@ async function mapWithConcurrency<T, R>(
   return results;
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
+
