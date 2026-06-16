@@ -5,8 +5,9 @@ import type {
 } from '../types';
 
 const FORECAST_ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
-const CHUNK_SIZE = 75;
-const CONCURRENCY = 3;
+const CHUNK_SIZE = 50;
+const CONCURRENCY = 1;
+const DELAY_BETWEEN_REQUESTS_MS = 1200;
 const CACHE_DURATION_MS = 45 * 60 * 1000;
 const GRID_VERSION = 'grid-0.075-0.10-v2';
 const CACHE_PREFIX = 'fraicheur-suisse:';
@@ -293,4 +294,8 @@ async function mapWithConcurrency<T, R>(
   );
 
   return results;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }

@@ -147,11 +147,12 @@ function createPopup(point: DisplayPoint): HTMLElement {
 
 function colorForTemperature(temperature: number, threshold: number): string {
   const delta = threshold - temperature;
-  if (delta >= 10) return '#2457a5';
+
+  if (delta >= 10) return '#2457a5'; // trèfrais
   if (delta >= 7) return '#3c89bd';
   if (delta >= 4) return '#70c3cf';
-  if (delta >= 2) return '#a8dbca';
-  return '#e8edbd';
+  if (delta >= 2) return '#f6c85f';
+  return '#d94f3d'; // juste sous le seuil, donc chaud
 }
 
 function opacityForTemperature(temperature: number, threshold: number): number {
