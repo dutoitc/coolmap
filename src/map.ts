@@ -6,19 +6,26 @@ import {
   GRID_LONGITUDE_STEP,
   SWITZERLAND_BORDER,
 } from './data/switzerland';
-import type { DisplayPoint } from './types';
+import type { DisplayPoint, MapDisplayMode } from './types';
 
 export interface MapController {
-  render(points: DisplayPoint[], threshold: number): void;
+  render(
+    points: DisplayPoint[],
+    threshold: number,
+    displayMode: MapDisplayMode,
+  ): void;
   focus(point: DisplayPoint): void;
   clear(): void;
 }
 
 export interface RenderSummary {
-  visiblePoints: DisplayPoint[];
+  points: DisplayPoint[];
+  pointsAtOrBelowThreshold: DisplayPoint[];
   minimum: number | null;
   maximum: number | null;
 }
+
+type WeatherLayer = L.Rectangle | L.Marker;
 
 export function createMap(
   elementId: string,
@@ -57,47 +64,45 @@ export function createMap(
   }).addTo(map);
 
   const weatherLayer: LayerGroup = L.layerGroup().addTo(map);
-  const pointLayers = new Map<string, L.Rectangle>();
+  const pointLayers = new Map<string, WeatherLayer>();
 
-  function render(points: DisplayPoint[], threshold: number): void {
+  function render(
+    points: DisplayPoint[],
+    threshold: number,
+    displayMode: MapDisplayMode,
+  ): void {
     weatherLayer.clearLayers();
     pointLayers.clear();
 
-    const visiblePoints = points.filter(
+    const temperatures = points.map((point) => point.temperature);
+    const minimum = temperatures.length ? Math.min(...temperatures) : null;
+    const maximum = temperatures.length ? Math.max(...temperatures) : null;
+    const pointsAtOrBelowThreshold = points.filter(
       (point) => point.temperature <= threshold,
     );
 
-    for (const point of visiblePoints) {
-      const bounds: L.LatLngBoundsExpression = [
-        [
-          point.latitude - GRID_LATITUDE_STEP / 2,
-          point.longitude - GRID_LONGITUDE_STEP / 2,
-        ],
-        [
-          point.latitude + GRID_LATITUDE_STEP / 2,
-          point.longitude + GRID_LONGITUDE_STEP / 2,
-        ],
-      ];
+    if (minimum !== null && maximum !== null) {
+      for (const point of points) {
+        const color = colorForTemperature(point.temperature, minimum, maximum);
+        const isHighlighted = point.temperature <= threshold;
+        const layer =
+          displayMode === 'temperatures'
+            ? createTemperatureMarker(point, color, isHighlighted)
+            : createTemperatureRectangle(point, color, isHighlighted);
 
-      const rectangle = L.rectangle(bounds, {
-        stroke: false,
-        fillColor: colorForTemperature(point.temperature, threshold),
-        fillOpacity: opacityForTemperature(point.temperature, threshold),
-        interactive: true,
-      });
-
-      rectangle.bindPopup(createPopup(point), {
-        maxWidth: 280,
-      });
-      rectangle.addTo(weatherLayer);
-      pointLayers.set(point.id, rectangle);
+        layer.bindPopup(createPopup(point), {
+          maxWidth: 280,
+        });
+        layer.addTo(weatherLayer);
+        pointLayers.set(point.id, layer);
+      }
     }
 
-    const temperatures = points.map((point) => point.temperature);
     onRender?.({
-      visiblePoints,
-      minimum: temperatures.length ? Math.min(...temperatures) : null,
-      maximum: temperatures.length ? Math.max(...temperatures) : null,
+      points,
+      pointsAtOrBelowThreshold,
+      minimum,
+      maximum,
     });
   }
 
@@ -111,10 +116,81 @@ export function createMap(
   function clear(): void {
     weatherLayer.clearLayers();
     pointLayers.clear();
-    onRender?.({ visiblePoints: [], minimum: null, maximum: null });
+    onRender?.({
+      points: [],
+      pointsAtOrBelowThreshold: [],
+      minimum: null,
+      maximum: null,
+    });
   }
 
   return { render, focus, clear };
+}
+
+function createTemperatureRectangle(
+  point: DisplayPoint,
+  color: string,
+  isHighlighted: boolean,
+): L.Rectangle {
+  const bounds: L.LatLngBoundsExpression = [
+    [
+      point.latitude - GRID_LATITUDE_STEP / 2,
+      point.longitude - GRID_LONGITUDE_STEP / 2,
+    ],
+    [
+      point.latitude + GRID_LATITUDE_STEP / 2,
+      point.longitude + GRID_LONGITUDE_STEP / 2,
+    ],
+  ];
+
+  const normalStyle: L.PathOptions = {
+    stroke: isHighlighted,
+    color: '#0b3d66',
+    opacity: isHighlighted ? 0.95 : 0,
+    weight: isHighlighted ? 2 : 0,
+    fillColor: color,
+    fillOpacity: isHighlighted ? 0.34 : 0.28,
+    interactive: true,
+  };
+
+  const rectangle = L.rectangle(bounds, normalStyle);
+
+  rectangle.on('mouseover', () => {
+    rectangle.setStyle({
+      fillOpacity: 0.52,
+      color: '#0b3d66',
+      opacity: 0.95,
+      weight: isHighlighted ? 3 : 1,
+      stroke: true,
+    });
+  });
+
+  rectangle.on('mouseout', () => {
+    rectangle.setStyle(normalStyle);
+  });
+
+  return rectangle;
+}
+
+function createTemperatureMarker(
+  point: DisplayPoint,
+  color: string,
+  isHighlighted: boolean,
+): L.Marker {
+  const temperature = Math.round(point.temperature);
+  const highlightedClass = isHighlighted ? ' is-threshold-highlighted' : '';
+  const icon = L.divIcon({
+    className: 'temperature-label-icon',
+    html: `<span class="temperature-label${highlightedClass}" style="--temperature-color: ${color}">${temperature}°</span>`,
+    iconSize: [34, 22],
+    iconAnchor: [17, 11],
+  });
+
+  return L.marker([point.latitude, point.longitude], {
+    icon,
+    keyboard: true,
+    title: `${point.temperature.toFixed(1)} °C`,
+  });
 }
 
 function createPopup(point: DisplayPoint): HTMLElement {
@@ -145,19 +221,49 @@ function createPopup(point: DisplayPoint): HTMLElement {
   return container;
 }
 
-function colorForTemperature(temperature: number, threshold: number): string {
-  const delta = threshold - temperature;
+function colorForTemperature(
+  temperature: number,
+  minimum: number,
+  maximum: number,
+): string {
+  if (maximum <= minimum) {
+    return '#6c9fc6';
+  }
 
-  if (delta >= 10) return '#2457a5'; // trèfrais
-  if (delta >= 7) return '#3c89bd';
-  if (delta >= 4) return '#70c3cf';
-  if (delta >= 2) return '#f6c85f';
-  return '#d94f3d'; // juste sous le seuil, donc chaud
+  const ratio = clamp((temperature - minimum) / (maximum - minimum), 0, 1);
+  const stops = [
+    { position: 0, color: [36, 87, 165] },
+    { position: 0.25, color: [64, 157, 191] },
+    { position: 0.5, color: [241, 210, 91] },
+    { position: 0.75, color: [232, 134, 55] },
+    { position: 1, color: [200, 62, 50] },
+  ];
+
+  const upperIndex = stops.findIndex((stop) => ratio <= stop.position);
+  if (upperIndex <= 0) {
+    return rgbToHex(stops[0].color);
+  }
+
+  const lower = stops[upperIndex - 1];
+  const upper = stops[upperIndex];
+  const localRatio =
+    (ratio - lower.position) / (upper.position - lower.position);
+
+  const color = lower.color.map((channel, index) =>
+    Math.round(channel + (upper.color[index] - channel) * localRatio),
+  );
+
+  return rgbToHex(color);
 }
 
-function opacityForTemperature(temperature: number, threshold: number): number {
-  const delta = Math.max(0, threshold - temperature);
-  return Math.min(0.78, 0.46 + delta * 0.025);
+function clamp(value: number, minimum: number, maximum: number): number {
+  return Math.min(maximum, Math.max(minimum, value));
+}
+
+function rgbToHex(color: number[]): string {
+  return `#${color
+    .map((channel) => channel.toString(16).padStart(2, '0'))
+    .join('')}`;
 }
 
 function formatAltitude(value: number | null): string {

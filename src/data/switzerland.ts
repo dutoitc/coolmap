@@ -4,8 +4,8 @@ import { SWITZERLAND_BORDER } from './switzerland-border';
 
 export { SWITZERLAND_BORDER };
 
-export const GRID_LATITUDE_STEP = 0.075;
-export const GRID_LONGITUDE_STEP = 0.1;
+export const GRID_LATITUDE_STEP = 0.085;
+export const GRID_LONGITUDE_STEP = 0.115;
 
 const BOUNDS = {
   minLatitude: 45.75,

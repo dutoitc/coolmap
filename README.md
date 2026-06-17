@@ -1,8 +1,6 @@
-CoolMap - Escape the Heat !
-
 # Fraîcheur Suisse
 
-Application cartographique statique pour repérer les secteurs de Suisse qui devraient rester sous une température choisie.
+Application cartographique statique pour comparer les températures prévues en Suisse et repérer rapidement les secteurs les plus frais ou les zones dépassant un seuil choisi.
 
 ## Fonctions
 
@@ -10,10 +8,11 @@ Application cartographique statique pour repérer les secteurs de Suisse qui dev
 - prévisions jusqu'à 16 jours selon les modèles disponibles ;
 - maximum de température journalier ;
 - température à une heure précise, chargée à la demande ;
-- filtre visuel : seules les cellules sous le seuil restent colorées ;
+- toutes les cellules restent visibles, colorées du bleu au rouge selon le minimum et le maximum courants ;
+- seuil visuel : les températures égales ou inférieures à la valeur choisie sont encadrées en bleu foncé ;
 - altitude, précipitations et vent dans les détails ;
 - liens directs vers Swisstopo et OpenStreetMap ;
-- cache local de 45 minutes pour limiter les appels API ;
+- cache local de 6 heures pour limiter les appels API ;
 - déploiement automatique sur GitHub Pages.
 
 ## Choix techniques
@@ -84,3 +83,12 @@ git push -u origin main
 ## Licence du code
 
 MIT.
+
+## Affichage de la température
+
+La carte propose deux modes :
+
+- **Carrés de couleur** : toutes les cellules disponibles sont affichées avec une opacité discrète ; bleu = plus froid, rouge = plus chaud selon le min/max courant.
+- **Températures** : chaque point affiche la température arrondie.
+
+Le seuil ne masque aucune cellule. Il encadre les carrés — ou renforce les étiquettes — dont la température est égale ou supérieure à la valeur choisie. Le compteur indique le nombre de cellules ainsi mises en évidence ; la liste des points les plus frais reste calculée sur toutes les mesures.

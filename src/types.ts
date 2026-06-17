@@ -34,3 +34,4 @@ export interface DisplayPoint extends GridPoint {
 }
 
 export type TemperatureMode = 'daily-max' | 'hourly';
+export type MapDisplayMode = 'colors' | 'temperatures';
